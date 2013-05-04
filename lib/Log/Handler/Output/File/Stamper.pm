@@ -92,7 +92,7 @@ use Log::Stamper;
 
 our @ISA = qw/Log::Handler::Output::File/;
 
-our $VERSION = '0.02';
+our $VERSION = '0.03';
 our $ERRSTR  = "";
 
 our $TIME_HIRES_AVAILABLE = undef;
@@ -168,9 +168,12 @@ sub _open {
 sub _fork_safe {
     my $self = shift;
 
-    if ($self->{fileopen} && $self->{_stamper_fh_pid} != $$) {
-        $self->close or return;
-        $self->_open or return;
+    if ($self->{fileopen}) {
+        my $pid = $$;
+        if ( $self->{_stamper_fh_pid} !~ m!^$pid$! ) {
+            $self->close or return;
+            $self->_open or return;
+        }
     }
 
     return 1;
